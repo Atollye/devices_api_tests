@@ -1,0 +1,13 @@
+__pycache__/
+.pytest_chache/
+*pycache*
+*pyc
+*chache
+.vscode/
+*cpython*
+my_venv/*
+logs/*
+
+_todo/*
+*/tmp*
+./libraries
