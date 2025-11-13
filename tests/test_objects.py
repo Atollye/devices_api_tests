@@ -5,12 +5,12 @@ from assertions.objects_assertion import should_be_posted_success, should_be_upd
     should_be_valid_objects_response
 
 from api.api_client import ApiClient
-from api.objects_api import get_objects, get_object, post_object, put_object, delete_object
+from api.objects_api import get_objects, get_object, post_object, put_object, patch_object, delete_object
 from assertions.assertion_base import assert_status_code, assert_response_body_fields, assert_bad_request, \
     assert_not_found, assert_empty_list, assert_schema, assert_not_exist
 from models.object_models import ObjectOutSchema, ObjectCreateOutSchema, CustomObjCreateOutSchema, \
     ObjectUpdateOutSchema, CustomObjUpdateOutSchema
-from utilities.files_utils import read_json_test_data, read_json_common_request_data
+from utilities.files_utils import read_json_test_data, read_json_common_request_data, read_json_file_data
 
 
 class TestObjects:
@@ -234,3 +234,26 @@ class TestObjects:
         # убеждаемся, что сервер дал NOT FOUND ответ
         assert_status_code(response, HTTPStatus.NOT_FOUND)
         assert_not_exist(request, response, obj_id)
+
+    # вариант теста, написанный полностью в том, же стиле, что и основной код
+    # ради единообразия в проекте
+    def test_patch_name_and_data_ver1(self, client, request):    
+        """
+        обновление всех полей объекта, кроме "id", т.е. "name" и "data"
+        стандартными данными
+        PATCH /objects/{id}
+        """
+        test_obj = read_json_common_request_data("valid_post_object")
+        response = post_object(client, json=test_obj)
+        assert_status_code(response, HTTPStatus.OK)
+
+        patch_data = read_json_file_data(
+            'test_data/test_patch_object_name_and_data'
+            )
+        test_obj_id = response.json()['id']
+        response = patch_object(client, test_obj_id, json=patch_data)
+
+        assert_status_code(response, HTTPStatus.OK)
+        assert_schema(response, CustomObjUpdateOutSchema)
+
+

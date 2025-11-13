@@ -16,6 +16,9 @@ def post_object(client, **kwargs):
 def put_object(client, obj_id, **kwargs):
     return client.put(routes.Routes.OBJECTS_ITEM.format(obj_id), **kwargs)
 
+def patch_object(client, obj_id, **kwargs):
+    return client.patch(routes.Routes.OBJECTS_ITEM.format(obj_id), **kwargs)
+
 
 def delete_object(client, obj_id):
     return client.delete(routes.Routes.OBJECTS_ITEM.format(obj_id))

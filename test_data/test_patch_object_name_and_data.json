@@ -1,0 +1,17 @@
+{
+  "name": "changed",
+  "data": {
+    "bool": false,
+    "int": 2025,
+    "float": 2025.25,
+    "string": "test string",
+    "array": [
+      "test 1",
+      "test 2",
+      "test 3"
+    ],
+    "obj": {
+      "testkey": "test value"
+    }
+  }
+}
