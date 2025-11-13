@@ -255,5 +255,7 @@ class TestObjects:
 
         assert_status_code(response, HTTPStatus.OK)
         assert_schema(response, CustomObjUpdateOutSchema)
+        patch_data['id'] = test_obj_id
+        should_be_updated_success(request, client, response, patch_data)
 
 
