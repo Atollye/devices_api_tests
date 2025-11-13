@@ -22,6 +22,14 @@ class TestObjects:
     def client(self):
         return ApiClient()
 
+    @pytest.fixture(scope='class')
+    def create_data(self, client):
+        test_obj = read_json_common_request_data("valid_post_object")
+        response = post_object(client, json=test_obj)
+        assert_status_code(response, HTTPStatus.OK)
+        yield response.json()['id']
+        delete_object(client, response.json()['id'])
+
     def test_get_objects(self, client, request):
         """
         получение заранее заготовленных объектов из базы с параметрами по-умолчанию,
@@ -259,3 +267,21 @@ class TestObjects:
         should_be_updated_success(request, client, response, patch_data)
 
 
+    def test_patch_name_and_data_ver2(self, client, create_data, request):
+        """
+        обновление всех полей объекта, кроме "id", т.е. "name" и "data"
+        стандартными данными
+        PATCH /objects/{id}
+        """
+        # подготавливаем объект для теста
+        test_obj_id = create_data
+  
+        patch_data = read_json_file_data(
+            'test_data/test_patch_object_name_and_data'
+            )
+        response = patch_object(client, test_obj_id, json=patch_data)
+
+        assert_status_code(response, HTTPStatus.OK)
+        assert_schema(response, CustomObjUpdateOutSchema)
+        patch_data['id'] = test_obj_id
+        should_be_updated_success(request, client, response, patch_data)
