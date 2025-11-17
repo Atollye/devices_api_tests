@@ -27,7 +27,7 @@ class TestObjects:
         test_obj = read_json_common_request_data("valid_post_object")
         response = post_object(client, json=test_obj)
         assert_status_code(response, HTTPStatus.OK)
-        yield response.json()['id']
+        yield response.json()
         delete_object(client, response.json()['id'])
 
     def test_get_objects(self, client, request):
@@ -274,7 +274,7 @@ class TestObjects:
         PATCH /objects/{id}
         """
         # подготавливаем объект для теста
-        test_obj_id = create_data
+        test_obj_id = create_data["id"]
   
         patch = read_json_file_data(
             'test_data/test_patch_object_name_and_data'
@@ -290,10 +290,10 @@ class TestObjects:
         """
         PATCH /objects/{id} {name = "", data = {}}
         """
-        test_obj_id = create_data
+        test_obj_id = create_data["id"]
         patch = {"name": "", "data": {}}
 
-        response = put_object(client, test_obj_id, json=patch)
+        response = patch_object(client, test_obj_id, json=patch)
   
         assert_status_code(response, HTTPStatus.OK)
         assert_schema(response, ObjectUpdateOutSchema)
@@ -301,7 +301,51 @@ class TestObjects:
         exp_json = patch
         should_be_updated_success(request, client, response, exp_json)
 
-        
+
+    def test_patch_data_with_null_object(self, client, create_data, request): 
+        """
+        PATCH /objects/{id} {"data": null}
+        """
+        test_obj_id = create_data["id"]
+        patch = {"data": None}
+
+        response = patch_object(client, test_obj_id, json=patch)
+
+        exp_json = create_data
+        exp_json.pop("createdAt", "Key not found")
+        exp_json.update(patch)
+        print(exp_json)
+        prtint(response.json())
+        # assert_status_code(response, HTTPStatus.OK)
+        # assert_schema(response, ObjectUpdateOutSchema)
+        # should_be_updated_success(request, client, response, exp_json)
+
+
+    @pytest.mark.parametrize(
+                            'name_patch', [
+                                "aBж-ё⺢丹ٱ٥é_7#@$dF",
+                                "%%*xЯу   衫龜٩٣",
+                                "测试数据",
+                                " ما ١٢٣!@#"
+                            ]
+    )
+    def test_patch_name_unicode(self, client, create_data, request, name_patch):
+        """
+        PATCH /objects/{id} {"name": [слова на разных языках]}
+        """
+        test_obj_id = create_data["id"]
+        patch = {"name": name_patch}
+
+        response = patch_object(client, test_obj_id, json=patch)
+
+        exp_json = create_data
+        exp_json.pop("createdAt", "Key not found")
+        exp_json.update(patch)
+        assert_status_code(response, HTTPStatus.OK)
+        assert_schema(response, ObjectUpdateOutSchema)
+        should_be_updated_success(request, client, response, exp_json)
+
+
 
 
 
