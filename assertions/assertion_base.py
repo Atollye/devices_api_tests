@@ -1,3 +1,4 @@
+import pytest
 from typing import Type
 
 from pydantic import BaseModel
@@ -110,6 +111,12 @@ def assert_status_code(response, expected_code):
     :param expected_code: ожидаемый код ответа
     :raises AssertionError: если значения не совпали
     """
+    # Добавила обработку ошибки API при превышении лимита запросов в день
+    if (
+        response.status_code == 405 and 
+        "you reached your limit of requests per day" in response.text
+        ):
+        pytest.exit("API limit reached (405). Stopping all tests.", returncode=1)
     assert expected_code == response.status_code, CodeLogMsg(response) \
         .add_compare_result(expected_code, response.status_code) \
         .add_request_url() \
