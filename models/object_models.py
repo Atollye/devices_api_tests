@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 
 from pydantic import BaseModel, Field
 
@@ -46,7 +46,7 @@ class CustomObjCreateOutSchema(BaseModel):
 class ObjectUpdateOutSchema(BaseModel):
     id: str
     name: str | None
-    data: ObjectData | None
+    data: ObjectData | None | Dict[str, Any] = Field(default_factory=dict)
     updatedAt: str
 
 

@@ -255,16 +255,16 @@ class TestObjects:
         response = post_object(client, json=test_obj)
         assert_status_code(response, HTTPStatus.OK)
 
-        patch_data = read_json_file_data(
+        patch = read_json_file_data(
             'test_data/test_patch_object_name_and_data'
             )
         test_obj_id = response.json()['id']
-        response = patch_object(client, test_obj_id, json=patch_data)
+        response = patch_object(client, test_obj_id, json=patch)
 
         assert_status_code(response, HTTPStatus.OK)
         assert_schema(response, CustomObjUpdateOutSchema)
-        patch_data['id'] = test_obj_id
-        should_be_updated_success(request, client, response, patch_data)
+        patch['id'] = test_obj_id
+        should_be_updated_success(request, client, response, patch)
 
 
     def test_patch_name_and_data_ver2(self, client, create_data, request):
@@ -276,12 +276,44 @@ class TestObjects:
         # подготавливаем объект для теста
         test_obj_id = create_data
   
-        patch_data = read_json_file_data(
+        patch = read_json_file_data(
             'test_data/test_patch_object_name_and_data'
             )
-        response = patch_object(client, test_obj_id, json=patch_data)
+        response = patch_object(client, test_obj_id, json=patch)
 
         assert_status_code(response, HTTPStatus.OK)
         assert_schema(response, CustomObjUpdateOutSchema)
-        patch_data['id'] = test_obj_id
-        should_be_updated_success(request, client, response, patch_data)
+        patch['id'] = test_obj_id
+        should_be_updated_success(request, client, response, patch)
+    
+    def test_patch_name_and_data_empty_objects(self, client, create_data, request): 
+        """
+        PATCH /objects/{id} {name = "", data = {}}
+        """
+        test_obj_id = create_data
+        patch = {"name": "", "data": {}}
+
+        response = put_object(client, test_obj_id, json=patch)
+  
+        assert_status_code(response, HTTPStatus.OK)
+        assert_schema(response, ObjectUpdateOutSchema)
+        patch.update({"id": test_obj_id})
+        exp_json = patch
+        should_be_updated_success(request, client, response, exp_json)
+
+        
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
