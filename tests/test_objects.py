@@ -37,7 +37,7 @@ class TestObjects:
         GET /objects
         """
         # получаем массив объектов с определенными айдишниками
-        response = get_objects(client, *param['ids'])
+        response = get_objects(client, *param["ids"])
 
         # убеждаемся, что в ответ пришли именно те объекты, id которых мы запросили
         assert_status_code(response, HTTPStatus.OK)
@@ -142,8 +142,8 @@ class TestObjects:
         assert_status_code(response, HTTPStatus.OK)
 
         # обновляем этот объект на пустой объект
-        exp_json = {"id": response.json()['id'], "name": None, "data": None}
-        response = put_object(client, exp_json['id'], json={})
+        exp_json = {"id": response.json()["id"], "name": None, "data": None}
+        response = put_object(client, exp_json["id"], json={})
 
         # убеждаемся, что объект был успешно обновлен
         assert_status_code(response, HTTPStatus.OK)
@@ -162,13 +162,13 @@ class TestObjects:
 
         # обновляем значения всех полей этого объекта на новые
         put_obj = read_json_test_data(request)
-        put_obj_id = response.json()['id']
+        put_obj_id = response.json()["id"]
         response = put_object(client, put_obj_id, json=put_obj)
 
         # убеждаемся, что объект был успешно обновлен
         assert_status_code(response, HTTPStatus.OK)
         assert_schema(response, CustomObjUpdateOutSchema)
-        put_obj['id'] = put_obj_id
+        put_obj["id"] = put_obj_id
         should_be_updated_success(request, client, response, put_obj)
 
     def test_put_object_send_invalid_json(self, client, request):
@@ -181,7 +181,7 @@ class TestObjects:
         assert_status_code(response, HTTPStatus.OK)
 
         # пытаемся обновить этот объект, отправив невалидный json
-        response = put_object(client, response.json()['id'], content='{"name",}',
+        response = put_object(client, response.json()["id"], content='{"name",}',
                               headers={"Content-Type": "application/json"})
 
         # убеждаемся, что сервер дал BAD REQUEST ответ
@@ -211,7 +211,7 @@ class TestObjects:
         assert_status_code(response, HTTPStatus.OK)
 
         # удаляем этот объект
-        obj_id = response.json()['id']
+        obj_id = response.json()["id"]
         response = delete_object(client, obj_id)
 
         # убеждаемся, что объект удален
@@ -244,14 +244,14 @@ class TestObjects:
         assert_status_code(response, HTTPStatus.OK)
 
         patch = read_json_file_data(
-            'test_data/test_patch_object_name_and_data'
+            "test_data/test_patch_object_name_and_data"
             )
-        test_obj_id = response.json()['id']
+        test_obj_id = response.json()["id"]
         response = patch_object(client, test_obj_id, json=patch)
 
         assert_status_code(response, HTTPStatus.OK)
         assert_schema(response, CustomObjUpdateOutSchema)
-        patch['id'] = test_obj_id
+        patch["id"] = test_obj_id
         should_be_updated_success(request, client, response, patch)
 
 
@@ -265,13 +265,13 @@ class TestObjects:
         test_obj_id = create_data["id"]
   
         patch = read_json_file_data(
-            'test_data/test_patch_object_name_and_data'
+            "test_data/test_patch_object_name_and_data"
             )
         response = patch_object(client, test_obj_id, json=patch)
 
         assert_status_code(response, HTTPStatus.OK)
         assert_schema(response, CustomObjUpdateOutSchema)
-        patch['id'] = test_obj_id
+        patch["id"] = test_obj_id
         should_be_updated_success(request, client, response, patch)
     
     def test_patch_name_and_data_empty_objects(self, client, create_data, request): 
@@ -310,7 +310,7 @@ class TestObjects:
 
 
     @pytest.mark.parametrize(
-                            'name_patch', [
+                            "name_patch", [
                                 "aBж-ё⺢丹ٱ٥é_7#@$dF",
                                 "%%*xЯу   衫龜٩٣",
                                 "测试数据",
@@ -350,7 +350,7 @@ class TestObjects:
             patch = {"name": "my name", "data": "my_data"}
             response = patch_object(client, test_obj_id, json=patch)
             assert_status_code(response, HTTPStatus.OK)
-            patch['id'] = test_obj_id
+            patch["id"] = test_obj_id
             should_be_updated_success(request, client, response, patch)
 
 
@@ -360,22 +360,21 @@ class TestPatchObjectsNegative:
     Негативные тесты на метод PATCH /objects
     """
 
-
-
     def test_patch_incorrect_json(self, client, create_data, request): 
         """
-        PATCH /objects/{id} {name = "", data = {}}
+        PATCH /objects/{id} -- отправляем не валидный json
         """
         test_obj_id = create_data["id"]
-        patch = {"name": "", "data": {}}
+        patch = """{"name": "test name", "data": {}"""
 
-        response = patch_object(client, test_obj_id, json=patch)
-  
-        assert_status_code(response, HTTPStatus.OK)
-        assert_schema(response, ObjectUpdateOutSchema)
-        patch.update({"id": test_obj_id})
-        exp_json = patch
-        should_be_updated_success(request, client, response, exp_json)
+        response = patch_object(
+            client, test_obj_id, 
+            content=patch,
+            headers={"Content-Type": "application/json"}
+        )
+        assert_status_code(response, HTTPStatus.BAD_REQUEST)
+        assert_bad_request(request, response)
+
 
 
 
