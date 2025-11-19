@@ -18,18 +18,6 @@ class TestObjects:
     Тесты /objects
     """
 
-    @pytest.fixture(scope='class')
-    def client(self):
-        return ApiClient()
-
-    @pytest.fixture(scope='class')
-    def create_data(self, client):
-        test_obj = read_json_common_request_data("valid_post_object")
-        response = post_object(client, json=test_obj)
-        assert_status_code(response, HTTPStatus.OK)
-        yield response.json()
-        delete_object(client, response.json()['id'])
-
     def test_get_objects(self, client, request):
         """
         получение заранее заготовленных объектов из базы с параметрами по-умолчанию,
@@ -346,6 +334,48 @@ class TestObjects:
         should_be_updated_success(request, client, response, exp_json)
 
 
+    def test_experiments(self, client, request):
+        resp = patch_object(
+            client, "ff8081819782e69e019a7e72698958ae", 
+            content='{"data":  "test data"}',
+            headers={"Content-Type": "application/json"}
+        )
+        
+        print(resp.status_code, resp.text)
+
+    def test_patch_name_copy(self, client, create_data, request):
+
+            test_obj_id = create_data["id"]
+    
+            patch = {"name": "my name", "data": "my_data"}
+            response = patch_object(client, test_obj_id, json=patch)
+            assert_status_code(response, HTTPStatus.OK)
+            patch['id'] = test_obj_id
+            should_be_updated_success(request, client, response, patch)
+
+
+
+class TestPatchObjectsNegative:
+    """
+    Негативные тесты на метод PATCH /objects
+    """
+
+
+
+    def test_patch_incorrect_json(self, client, create_data, request): 
+        """
+        PATCH /objects/{id} {name = "", data = {}}
+        """
+        test_obj_id = create_data["id"]
+        patch = {"name": "", "data": {}}
+
+        response = patch_object(client, test_obj_id, json=patch)
+  
+        assert_status_code(response, HTTPStatus.OK)
+        assert_schema(response, ObjectUpdateOutSchema)
+        patch.update({"id": test_obj_id})
+        exp_json = patch
+        should_be_updated_success(request, client, response, exp_json)
 
 
 

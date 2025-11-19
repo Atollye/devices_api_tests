@@ -6,6 +6,10 @@ from dotenv import load_dotenv
 from utilities.logger_utils import logger
 
 
+pytest_plugins = (
+    'utilities.object_fixtures',
+)
+
 def pytest_configure(config):
     # устанавливаем текущую директорию на корень проекта (это позволит прописывать относительные пути к файлам)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
