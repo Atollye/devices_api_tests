@@ -375,6 +375,16 @@ class TestPatchObjectsNegative:
         assert_status_code(response, HTTPStatus.BAD_REQUEST)
         assert_bad_request(request, response)
 
+    def test_patch_non_existent_object(self, client, request): 
+        """
+        Попытка пропатчить несуществующий объект
+         PATCH /objects/{id}, id не существует
+        """
+        obj_id = "ab7ba7ab7bba7aab7bb7a7bbaa7b7ab7"
+        patch = {"name": "test name", "data": "test data"}
+        response = patch_object(client, obj_id, json=patch)
+        assert_status_code(response, HTTPStatus.NOT_FOUND)
+        assert_not_found(request, response, obj_id)
 
 
 

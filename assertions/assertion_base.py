@@ -211,6 +211,8 @@ def assert_not_found(request, response, obj_id):
     """
     exp = read_json_common_response_data("not_found_obj_response")
     exp['error'] = exp['error'].format(obj_id)
+    if response.request.method == "PATCH":
+        exp['error'] = exp['error'].replace("PUT", "PATCH")
     assert_response_body_fields(request, response, exp_obj=exp)
 
 
